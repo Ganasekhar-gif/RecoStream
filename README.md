@@ -55,7 +55,7 @@ netflix/
 
 ## 🧱 System Architecture
 
-![Architecture](recommendation_architecture.png)
+![recommendation_architecture](https://github.com/user-attachments/assets/dfe8cd51-7bf1-41cc-b5bf-adc3b4db0121)
 
 ---
 
