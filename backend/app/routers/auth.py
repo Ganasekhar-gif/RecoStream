@@ -9,7 +9,7 @@ router = APIRouter(
 )
 
 @router.post("/login", response_model=schemas.Token)
-def login(request: schemas.UserCreate, db: Session = Depends(database.get_db)):
+def login(request: schemas.UserLogin, db: Session = Depends(database.get_db)):
     user = db.query(models.User).filter(models.User.email == request.email).first()
     
     if not user or not utils.verify_password(request.password, user.hashed_password):

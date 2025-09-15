@@ -13,4 +13,3 @@ class RecommendationRequest(BaseModel):
 @router.post("/recommend/")
 def get_recommendations(user_input: str = Body(..., embed=True), user_id: int = Body(...)):
     return hybrid.hybrid_recommend(user_id=user_id, user_input=user_input)
-
