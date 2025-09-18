@@ -6,3 +6,7 @@ python-jose
 passlib[bcrypt]
 python-dotenv
 pydantic[email]
+sentence_transformers
+pandas
+faiss-cpu
+surprise

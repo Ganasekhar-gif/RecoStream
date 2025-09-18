@@ -1,8 +1,8 @@
 # 🎬 RecoStream: Emotion + Behavior Aware Recommendation System
 
-RecoStream is a full-stack, Netflix-style recommendation system that provides **personalized content and product suggestions** based on a user's preferences, behaviors, and emotional tone of inputs.
+RecoStream is a full‑stack, Netflix‑style recommendation system that provides **personalized movie suggestions** based on a user’s preferences, behaviors, and the semantic meaning of their inputs.
 
-This system combines **BERT-based semantic recommendations** with **Collaborative Filtering** and is designed for future enhancement using **Reinforcement Learning with Vowpal Wabbit**.
+It combines **Sentence‑BERT** semantic search with **Collaborative Filtering (Surprise)** and a **feedback loop** (like/dislike/click). The project exposes a FastAPI backend and a modern React frontend.
 
 ---
 
@@ -24,33 +24,41 @@ This system combines **BERT-based semantic recommendations** with **Collaborativ
 
 | Layer        | Tools                                                                 |
 |--------------|-----------------------------------------------------------------------|
-| Frontend     | React.js (in progress) / Streamlit (optional prototype)              |
-| Backend      | FastAPI, PostgreSQL, SQLAlchemy, JWT, Pydantic                        |
+| Frontend     | React (Vite, Tailwind, Framer Motion, Axios)                          |
+| Backend      | FastAPI, SQLAlchemy, JWT, Pydantic                                    |
 | Recommender  | Sentence-BERT, Surprise (Collaborative Filtering), Vowpal Wabbit (RL) |
-| Hosting      | Docker, Render/Heroku/EC2 (your choice)                               |
+| Storage      | Local files (JSON/NumPy/FAISS index)                                  |
 
 ---
 
 ## 📁 Project Structure
 
 ```
-netflix/
-├── app/
-│   ├── main.py                  # FastAPI entrypoint
-│   ├── database.py              # DB connection setup
-│   ├── models.py                # ORM models (User, Feedback)
-│   ├── utils.py                 # JWT + password hashing
-│   ├── recommender.py           # BERT-based semantic recommender
-│   ├── cf.py                    # Collaborative filtering recommender
-│   ├── hybrid.py                # Combines BERT + CF (hybrid logic)
-│   ├── routers/
-│   │   ├── user.py              # Signup API
-│   │   ├── auth.py              # Login/auth API
-│   │   ├── recommendation.py    # Recommender API
-│   │   └── feedback.py          # Like/Dislike/Click tracking
-├── movie_data.json              # Static movie descriptions + genres
-├── ratings.csv                  # Sample user-movie interactions
-├── .env                         # Secure keys and DB connection
+RecoStream/
+├── backend/
+│   └── app/
+│       ├── main.py                 # FastAPI entrypoint
+│       ├── database.py             # DB connection
+│       ├── models.py               # ORM models (User, Feedback)
+│       ├── schemas.py              # Pydantic schemas
+│       ├── recommender.py          # BERT/FAISS, incremental index update
+│       ├── hybrid.py               # (Optional) hybrid logic
+│       └── routers/
+│           ├── user.py             # Signup API
+│           ├── auth.py             # Login/auth API
+│           ├── recommendation.py   # Recommendation API (single endpoint)
+│           └── feedback.py         # Like/Dislike/Click endpoints
+├── frontend/
+│   ├── index.html
+│   └── src/
+│       ├── main.jsx
+│       ├── utils/api.js            # Axios, endpoints, poster helpers
+│       ├── contexts/               # Auth, Toast, Profile contexts
+│       ├── components/             # MovieCard, MovieModal, MovieGrid, Layout
+│       └── pages/                  # Home, Search, Genre, Profile, Login, Signup
+├── requirements.txt                # Python dependencies (install with conda)
+├── .env                            # Backend environment variables
+└── README.md
 ```
 
 ## 🧱 System Architecture
@@ -59,41 +67,59 @@ netflix/
 
 ---
 
-## 🚀 Setup Instructions
+## 🚀 Local Development Setup
 
-### 1. Clone the repo
+The commands below assume you are in the project root: `RecoStream/`.
+
+### 1) Prerequisites
+- Anaconda/Miniconda installed (for the `recostream` environment)
+- Node.js 18+
+
+### 2) Create and activate the conda environment
 ```bash
-git clone https://github.com/your-username/reco-stream.git
-cd reco-stream/backend
+conda create -n recostream python=3.10 -y
+conda activate recostream
 ```
 
-### 2. Setup Python environment
-```bash
-python -m venv venv
-venv\Scripts\activate       # Windows
-# or
-source venv/bin/activate    # macOS/Linux
+### 3) Install backend dependencies (via conda)
+Use conda to install dependencies from `requirements.txt`.
 
-pip install -r requirements.txt
+```bash
+conda activate recostream
+conda install --file requirements.txt -c conda-forge -y
+# If any packages are missing on conda, you can fallback to pip:
+# pip install -r requirements.txt
 ```
 
-> ⚠️ Note: If vowpalwabbit fails to install on Windows, use a prebuilt wheel from Gohlke's repo.
-
-### 3. Create `.env`
+### 4) Configure backend environment variables
 ```env
-DATABASE_URL=postgresql://postgres:<your-password>@localhost:5432/recommender
 SECRET_KEY=your_secret_key
 ALGORITHM=HS256
 ACCESS_TOKEN_EXPIRE_MINUTES=60
+# Add any other keys required by your app
 ```
 
-### 4. Run the backend
+Create this `.env` file at `backend/app/.env` or load using your preferred config strategy.
+
+### 5) Run the backend (from project root)
 ```bash
-uvicorn app.main:app --reload
+conda activate recostream
+uvicorn backend.app.main:app --reload
 ```
 
-### 5. Access API Docs
-Open http://127.0.0.1:8000/docs in your browser.
+The API will be available at: http://127.0.0.1:8000
+
+Interactive docs: http://127.0.0.1:8000/docs
+
+### 6) Run the frontend (in a second terminal)
+```bash
+conda activate recostream
+cd frontend
+npm install
+npm run dev
+```
+
+By default Vite will start on: http://localhost:5173
 
 ---
 
@@ -137,7 +163,7 @@ Open http://127.0.0.1:8000/docs in your browser.
 | 🧾 Movie-to-ID Mapping                | ✅ Done        |
 | 🎯 Learnable Ranking (BERT + CF)      | ✅ Hybrid done |
 | 🧍 User Clustering                    | 🔜 Planned     |
-| 📱 Frontend UI (React or Streamlit)   | 🔜 Planned     |
+| 📱 Frontend UI (React)                | ✅ Implemented  |
 | 🛡️ OAuth + Refresh Tokens             | 🔜 Planned     |
 
 ---
@@ -165,6 +191,22 @@ This project is open-source under the MIT License.
 ---
 
 ## ✨ Inspiration
+
+---
+
+## 🔧 Troubleshooting
+
+- **CORS errors during local dev**
+  - Ensure the FastAPI CORS middleware allows `http://localhost:5173`.
+
+- **Missing posters**
+  - The frontend uses `poster_path` returned by the backend. If a movie has no poster, a placeholder is shown.
+
+- **Profile shows movie ID instead of title**
+  - Ensure the backend feedback stats endpoint returns `movie_title` and `movie_year` for each feedback entry (join with your movie dataset or store these values at feedback time).
+
+- **FAISS index updates**
+  - Add new movies to the source JSON used by `recommender.py` and call the update function (e.g., expose an admin route that calls `update_faiss_index()` to append to the index without full rebuild).
 
 Inspired by Netflix, Spotify, and real-world hybrid recommender systems with:
 
