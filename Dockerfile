@@ -1,4 +1,5 @@
 # Multi-stage Dockerfile for RecoStream Application
+
 # Stage 1: Build Frontend
 FROM node:18-alpine AS frontend-builder
 
@@ -17,7 +18,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Stage 2: Backend with Frontend
-FROM python:3.10-slim AS backend
+FROM python:3.10-slim
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -37,11 +38,8 @@ COPY backend/ ./backend/
 # Copy built frontend from previous stage
 COPY --from=frontend-builder /app/frontend/dist ./frontend/dist
 
-# Create necessary directories and files
+# Create necessary directories
 RUN mkdir -p /app/data
-
-# Copy any data files needed by the backend
-COPY backend/app/*.json ./backend/app/ 2>/dev/null || true
 
 # Set environment variables
 ENV PYTHONPATH=/app

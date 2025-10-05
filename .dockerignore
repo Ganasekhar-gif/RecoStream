@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+.env
+.env.docker
+node_modules/
+dist/
+build/
+.vscode/
+.git/
+.gitignore
+.DS_Store

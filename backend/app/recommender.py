@@ -15,7 +15,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 # File paths
 # ----------------------------
 base_dir = os.path.dirname(__file__)
-file_path = os.path.join(base_dir, "movies_data.json")
+file_path = os.path.join(base_dir, "new_movies.json")
 index_file = os.path.join(base_dir, "faiss_index.bin")
 embeddings_file = os.path.join(base_dir, "movie_embeddings.npy")
 ids_file = os.path.join(base_dir, "movie_ids.npy")
@@ -36,7 +36,7 @@ if os.path.exists(index_file) and os.path.exists(embeddings_file) and os.path.ex
     stored_ids = np.load(ids_file).tolist()
 else:
     print("Building FAISS index from scratch...")
-    descriptions = [f"{movie['description']} Genre: {movie['genre']}" for movie in movies]
+    descriptions = [f"{movie['description']} Genre: {movie['genres']}" for movie in movies]
     embeddings = model.encode(descriptions, convert_to_numpy=True, show_progress_bar=True)
 
     # Normalize for cosine similarity
@@ -74,7 +74,7 @@ def update_faiss_index():
     print(f"Found {len(new_movies)} new movies. Updating FAISS index...")
 
     # Compute embeddings for new movies
-    new_descriptions = [f"{m['description']} Genre: {m['genre']}" for m in new_movies]
+    new_descriptions = [f"{m['description']} Genre: {m['genres']}" for m in new_movies]
     new_embeddings = model.encode(new_descriptions, convert_to_numpy=True, show_progress_bar=True)
     faiss.normalize_L2(new_embeddings)
 
@@ -132,7 +132,10 @@ def recommend_movies(user_input, user_id=None, top_k=10):
         results.append({
             "id": movie["id"],
             "title": movie["title"],
+            "year": movie.get("year"),
             "description": movie["description"],
+            "poster_path": movie.get("poster_path"),
+            "rating": movie.get("rating"),
             "score": round(final_score, 3)
         })
 

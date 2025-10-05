@@ -42,7 +42,10 @@ const Genre = () => {
       }
       
       // Add poster URLs directly from backend data
-      const moviesWithPosters = posterHelpers.addPosterUrls(response.data)
+      let moviesWithPosters = posterHelpers.addPosterUrls(response.data)
+      
+      // Merge user feedback state with movie data
+      moviesWithPosters = await mergeUserFeedbackWithMovies(moviesWithPosters)
       
       // Preload posters for better UX
       await posterHelpers.batchPreloadPosters(moviesWithPosters)
@@ -73,9 +76,51 @@ const Genre = () => {
     setSelectedMovie(null)
   }
 
+  // Helper function to merge user feedback state with movie data
+  const mergeUserFeedbackWithMovies = async (movies) => {
+    if (!user?.id || !movies || movies.length === 0) {
+      return movies
+    }
+
+    try {
+      // Fetch user's feedback stats
+      const statsResponse = await endpoints.getUserStats(user.id)
+      const userFeedbacks = statsResponse.data.feedbacks || []
+      
+      // Create a lookup map for faster access
+      const feedbackMap = {}
+      userFeedbacks.forEach(feedback => {
+        feedbackMap[feedback.movie_id] = feedback.feedback_type
+      })
+
+      // Merge feedback state with movie data
+      const moviesWithFeedback = movies.map(movie => ({
+        ...movie,
+        user_feedback: feedbackMap[movie.id] || null
+      }))
+
+      console.log(`Merged feedback state for ${Object.keys(feedbackMap).length} movies in ${genreName} genre`)
+      return moviesWithFeedback
+    } catch (error) {
+      console.log('Could not fetch user feedback for genre merging:', error.response?.status)
+      // Return movies without feedback state if API fails
+      return movies.map(movie => ({ ...movie, user_feedback: null }))
+    }
+  }
+
   const handleFeedback = async (movieId, feedback) => {
     if (!user?.id) {
       toast.error('User not authenticated')
+      return
+    }
+
+    // Find the current movie to check existing feedback
+    const currentMovie = movies.find(movie => movie.id === movieId)
+    const currentFeedback = currentMovie?.user_feedback
+
+    // If user clicks the same feedback type, show message and don't submit
+    if (currentFeedback === feedback) {
+      toast.info(`You have already ${feedback === 'like' ? 'liked' : 'disliked'} this movie!`)
       return
     }
 
@@ -95,7 +140,9 @@ const Genre = () => {
         )
       )
       
-      toast.success(`Movie ${feedback === 'like' ? 'liked' : 'disliked'}!`)
+      const actionText = feedback === 'like' ? 'liked' : 'disliked'
+      const previousAction = currentFeedback ? ` (changed from ${currentFeedback})` : ''
+      toast.success(`Movie ${actionText}!${previousAction}`)
       
       // Trigger profile refresh for real-time updates
       triggerRefresh()

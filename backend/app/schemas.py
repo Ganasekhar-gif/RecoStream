@@ -22,4 +22,4 @@ class Token(BaseModel):
 class FeedbackCreate(BaseModel):
     user_id: int
     movie_id: int
-    feedback_type: Literal["like", "dislike"]
+    feedback_type: Literal["like", "dislike", "click"]

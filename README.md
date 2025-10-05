@@ -58,7 +58,13 @@ RecoStream/
 │       └── pages/                  # Home, Search, Genre, Profile, Login, Signup
 ├── requirements.txt                # Python dependencies (install with conda)
 ├── .env                            # Backend environment variables
+├── DockerFile
+├── docker-compose.yml
+├── build-and-deploy.sh
+├── init.sql
+├── .env.docker                        
 └── README.md
+
 ```
 
 ## 🧱 System Architecture
@@ -123,6 +129,31 @@ By default Vite will start on: http://localhost:5173
 
 ---
 
+## Docker Deployment
+
+For quick setup using Docker and Docker Compose:
+```bash
+# Build and start all services
+docker-compose up --build
+
+# Access the app
+# - Frontend: http://localhost:5173
+# - API docs: http://localhost:8000/docs
+
+```
+
+To Stop Services:
+```bash
+docker-compose down
+```
+
+use the optional deployment script for advanced management:
+```bash
+./build-and-deploy.sh build
+./build-and-deploy.sh prod
+
+```
+
 ## ✅ Current Capabilities
 
 - ✅ User Signup/Login (JWT)
@@ -168,7 +199,7 @@ By default Vite will start on: http://localhost:5173
 
 ---
 
-## 🎯 Next Steps
+## 🎯 Roadmap
 
 - ✅ Integrate Vowpal Wabbit into `/bandit_recommend` route  
 - ✅ Track real-time feedback for Bandit reward learning  
@@ -213,3 +244,11 @@ Inspired by Netflix, Spotify, and real-world hybrid recommender systems with:
 - NLP + emotion modeling  
 - Collaborative filtering  
 - Online learning (bandits)
+
+
+---
+
+💬 Built with passion for learning how recommendation systems like Netflix actually work —  
+blending machine learning, software engineering, and personalization.
+
+---

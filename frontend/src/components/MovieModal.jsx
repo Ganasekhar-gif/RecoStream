@@ -77,13 +77,6 @@ const MovieModal = ({ movie, isOpen, onClose, onFeedback }) => {
                         <span className="font-medium">{movie.rating}/10</span>
                       </div>
                     )}
-                    
-                    {movie.score && (
-                      <div className="flex items-center space-x-2">
-                        <Star className="w-5 h-5 text-blue-400" />
-                        <span>Score: {movie.score.toFixed(1)}</span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Description */}

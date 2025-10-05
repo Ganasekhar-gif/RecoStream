@@ -6,6 +6,7 @@ from .routers import user, auth
 from .routers import recommendation
 from .routers import feedback
 from . import recommender
+from .routers import tmdb
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -14,7 +15,7 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],  # Frontend URLs
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:3000"],  # Frontend URLs
     allow_credentials=True,
     allow_methods=["*"],  # Allow all methods
     allow_headers=["*"],  # Allow all headers
@@ -24,6 +25,7 @@ app.include_router(user.router)
 app.include_router(auth.router)
 app.include_router(recommendation.router)
 app.include_router(feedback.router)
+app.include_router(tmdb.router)
 
 @app.get("/")
 def read_root():

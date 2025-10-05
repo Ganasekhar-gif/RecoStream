@@ -19,7 +19,16 @@ def register(user: schemas.UserCreate, db: Session = Depends(database.SessionLoc
 @router.post("/login", response_model=schemas.Token)
 def login(user: schemas.UserLogin, db: Session = Depends(database.SessionLocal)):
     db_user = db.query(models.User).filter(models.User.email == user.email).first()
-    if not db_user or not utils.verify_password(user.password, db_user.hashed_password):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+    
+    # Case 1: No user with that email
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Case 2: Wrong password
+    if not utils.verify_password(user.password, db_user.hashed_password):
+        raise HTTPException(status_code=401, detail="Incorrect password")
+    
+    # Case 3: Success
     token = utils.create_access_token({"sub": db_user.email})
     return {"access_token": token, "token_type": "bearer"}
+

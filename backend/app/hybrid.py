@@ -52,33 +52,37 @@ def hybrid_recommend(user_id: int, user_input: str, top_k: int = 10, alpha: floa
         List of movie recommendations sorted by bandit-adjusted scores.
     """
     # Step 1: Get semantic recommendations
-    bert_results = recommender.recommend_movies(user_input, top_k=20)  # fetch more for bandit exploration
-
+    bert_results = recommender.recommend_movies(user_input, top_k=20)
     hybrid_results = []
+    
+    # Get disliked movie IDs
+    feedback_entries = recommender.get_user_feedback(user_id)
+    disliked_ids = {f.movie_id for f in feedback_entries if f.feedback_type == "dislike"}
+    
     for result in bert_results:
         movie_id = result["id"]
-        movie_title = result["title"]
+        if movie_id in disliked_ids:
+            continue  # Skip disliked movies completely
+
         bert_score = result["score"]
         cf_score = cf.get_cf_score(user_id, movie_id)
-
-        # Combine both scores
         combined_score = alpha * bert_score + (1 - alpha) * cf_score
 
-        # Compute average reward if available
         avg_reward = bandit_rewards[movie_id] / (bandit_counts[movie_id] + 1e-5)
-
-        # Adjust score slightly with reward history
         adjusted_score = 0.9 * combined_score + 0.1 * avg_reward
 
         hybrid_results.append({
             "id": movie_id,
-            "title": movie_title,
+            "title": result["title"],
+            "year": result.get("year"),
             "description": result["description"],
+            "poster_path": result.get("poster_path"),
+            "rating": result.get("rating"),
             "bert_score": round(bert_score, 3),
             "cf_score": round(cf_score, 3),
             "score": round(adjusted_score, 3)
         })
 
-    # Step 2: Use ε-Greedy to select final recommendations
+    # Apply bandit selection
     final_recommendations = select_with_bandit(hybrid_results, top_k=top_k)
     return final_recommendations

@@ -1,69 +1,37 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
   postgres:
-    image: postgres:15-alpine
+    image: postgres:13
     container_name: recostream-db
     environment:
-      POSTGRES_DB: recostream
-      POSTGRES_USER: recostream_user
-      POSTGRES_PASSWORD: recostream_password
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_NAME:-recostream}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
       - "5432:5432"
-    networks:
-      - recostream-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U recostream_user -d recostream"]
-      interval: 10s
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres} -d ${DB_NAME:-recostream}"]
+      interval: 5s
       timeout: 5s
       retries: 5
 
-  # RecoStream Application
-  recostream-app:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  app:
+    build: .
     container_name: recostream-app
-    environment:
-      - DATABASE_URL=postgresql://recostream_user:recostream_password@postgres:5432/recostream
-      - SECRET_KEY=your-secret-key-change-this-in-production
-      - ALGORITHM=HS256
-      - ACCESS_TOKEN_EXPIRE_MINUTES=30
-      - VITE_TMDB_API_KEY=d902a2d3fc329d04f455377749413244
-    ports:
-      - "8000:8000"
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - recostream-network
-    volumes:
-      - ./data:/app/data
-    restart: unless-stopped
-
-  # Nginx Reverse Proxy (Optional)
-  nginx:
-    image: nginx:alpine
-    container_name: recostream-nginx
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-recostream}
+      - FRONTEND_BUILD_PATH=/app/frontend/dist
+      - TMDB_API_KEY=${TMDB_API_KEY:-your_tmdb_api_key_here}
+      - SECRET_KEY=${SECRET_KEY:-dev_secret_key}
     ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./ssl:/etc/nginx/ssl:ro
-    depends_on:
-      - recostream-app
-    networks:
-      - recostream-network
+      - "8000:8000"
     restart: unless-stopped
 
 volumes:
   postgres_data:
-
-networks:
-  recostream-network:
-    driver: bridge
