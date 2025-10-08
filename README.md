@@ -4,6 +4,8 @@ RecoStream is a full‑stack, Netflix‑style recommendation system that provide
 
 It combines **Sentence‑BERT** semantic search with **Collaborative Filtering (Surprise)** and a **feedback loop** (like/dislike/click). The project exposes a FastAPI backend and a modern React frontend.
 
+Linkedin Post Link: https://www.linkedin.com/posts/ganasekhark_machinelearning-recommendationsystems-ai-activity-7374888182980653056-ozCa?utm_source=share&utm_medium=member_desktop&rcm=ACoAAD89BZIBRKWU64_jsUAxvhPir2TtHKAUOXY
+
 ---
 
 ## 📌 Features
