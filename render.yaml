@@ -1,0 +1,30 @@
+services:
+  - type: web
+    name: recostream-app
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: DATABASE_URL
+        value: postgresql://postgres:postgres@recostream-db:5432/recostream
+      - key: TMDB_API_KEY
+        value: your_tmdb_api_key_here
+      - key: SECRET_KEY
+        value: dev_secret_key
+    autoDeploy: true
+    healthCheckPath: /health
+    startCommand: uvicorn backend.app.main:app --host 0.0.0.0 --port 8000
+
+  - type: pserv
+    name: recostream-db
+    env: docker
+    dockerfilePath: null
+    image: postgres:13
+    plan: free
+    envVars:
+      - key: POSTGRES_USER
+        value: postgres
+      - key: POSTGRES_PASSWORD
+        value: postgres
+      - key: POSTGRES_DB
+        value: recostream
